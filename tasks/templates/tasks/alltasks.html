@@ -11,7 +11,7 @@
                 <option value="Done">Done</option>
             </select>
         </div>
-        <div class="mr-4">
+        <div class="mr-2">
             <label for="sort-by" class="mr-2">Sort By:</label>
             <select id="sort-by" class="py-2 px-4 bg-gray-200 text-gray-700 rounded-md">
                 <option value="priority">Priority</option>
@@ -23,7 +23,7 @@
     {% if tasks %}
     <h1 class="text-2xl font-semibold mb-4"> </h1>
     {% for task in tasks %}
-    <a href="{% url 'tasks:add' user_id=user_id %}" class="bg-gray-100 rounded-lg p-4 shadow-md transition duration-300 hover:bg-gray-200 block">
+    <a href="{% url 'tasks:detail' user_id=user_id task_id=task.id %}" class="bg-gray-100 rounded-lg p-4 shadow-md transition duration-300 hover:bg-gray-200 block">
         <div class="flex items-center mb-2">
             <div class="flex items-center">
                 <div class="h-4 w-4 rounded-full mr-2 priority-dot" data-priority="{{ task.priority }}"></div>

@@ -6,7 +6,6 @@ from base_model.models import Task, User
 
 @login_required
 def show_all_task(request, user_id):
-    print("suiii")
     if request.method == 'POST':
 
         tasks = Task.objects.all()
@@ -14,7 +13,7 @@ def show_all_task(request, user_id):
         for task in tasks:
             assigned_user_id = task.assigned_user_id
             assigned_user = get_object_or_404(User, id=assigned_user_id)
-            task.assigned_user_name = assigned_user.name  # Assuming 'name' is the field in the User model
+            task.assigned_user_name = assigned_user.name 
 
         return render(request, 'tasks/alltasks.html', {
             'tasks': tasks,
@@ -22,16 +21,13 @@ def show_all_task(request, user_id):
         })
 
     else:
-        print("suii2")
         filter_by = request.GET.get('filter')
-        print("filter_by", filter_by)
 
         sort_by = request.GET.get('sort')
-        print("sort_by", sort_by)
         tasks = Task.objects.all()
 
         # Apply filtering based on filter_by
-        
+
         if filter_by == 'To-Do':
             tasks = tasks.filter(status='To-Do')
         elif filter_by == 'In-Progress':
@@ -48,7 +44,7 @@ def show_all_task(request, user_id):
             'Medium': 3,
             'Low': 4,
             'Lowest': 5,
-            # You can add more priority levels if needed
+           
         }
 
 
@@ -61,8 +57,7 @@ def show_all_task(request, user_id):
         for task in tasks:
             assigned_user_id = task.assigned_user_id
             assigned_user = get_object_or_404(User, id=assigned_user_id)
-            task.assigned_user_name = assigned_user.name  # Assuming 'name' is the field in the User model
-
+            task.assigned_user_name = assigned_user.name  
         return render(request, 'tasks/alltasks.html', {
             'tasks': tasks,
             'user_id': user_id 
@@ -97,63 +92,87 @@ def add(request, user_id):
             sprint=sprint,
             created_by=created_by
         )
-        # Optionally, you can redirect to a specific page after creating the task
-        # return redirect('tasks:task_detail', pk=task.pk)  # Adjust the URL name and parameters
-        
-        # Or return a JSON response if it's an AJAX request
-        # return JsonResponse({'success': True, 'task_id': task.pk})
-        # If it's a GET request or the form wasn't valid, render the template with the form
 
-        redirect_url = request.POST.get('redirect_url')  # Get the redirect URL from the form
-        return redirect(redirect_url)  # Redirect to the specified URL after add
+        redirect_url = request.POST.get('redirect_url')   
+        return redirect(redirect_url) 
     
     users_data = User.objects.all().values('id', 'name', 'email')
     return render(request, 'tasks/add.html',{"users_data": users_data})
 
 
 @login_required
-def detail(request, project_id, todolist_id, pk):
-    project = Project.objects.filter(created_by=request.user).get(pk=project_id)
-    todolist = Todolist.objects.filter(project=project).get(pk=todolist_id)
-    task = Task.objects.filter(project=project).filter(todolist=todolist).get(pk=pk)
-
-    if request.GET.get('is_done', '') == 'yes':
-        task.is_done = True
-        task.save()
-
-    return render(request, 'task/detail.html', {
-        'task': task
-    })
-
-
-@login_required
-def edit(request, project_id, todolist_id, pk):
-    project = Project.objects.filter(created_by=request.user).get(pk=project_id)
-    todolist = Todolist.objects.filter(project=project).get(pk=todolist_id)
-    task = Task.objects.filter(project=project).filter(todolist=todolist).get(pk=pk)
+def detail(request, user_id, task_id):
 
     if request.method == 'POST':
-        name = request.POST.get('name', '')
-        description = request.POST.get('description', '')
+        task = Task.objects.get(id=task_id)
 
-        if name:
-            task.name = name
+        task.title = request.POST.get('title', '')
+        task.description = request.POST.get('description', '')
+        task.due_date = request.POST.get('due_date', '')  
+        assigned_user_uuid = request.POST.get('assigned_user', '')
+        task.status = request.POST.get('status', '')
+        task.priority = request.POST.get('priority', '')
+        task.label = request.POST.get('label', '')
+        task.sprint = request.POST.get('sprint', '')
+    
+        
+        task.assigned_user = get_object_or_404(User, id=assigned_user_uuid)
+        task.created_by = get_object_or_404(User,id=user_id)
 
-        task.description = description
         task.save()
 
-        return redirect(f'/projects/{project_id}/{todolist_id}/{pk}/')
 
-    return render(request, 'task/edit.html', {
+    task = Task.objects.get(id=task_id)
+
+    assigned_user_id = task.assigned_user_id
+    assigned_user = get_object_or_404(User, id=assigned_user_id)
+    task.assigned_user_name = assigned_user.name
+
+    return render(request, 'tasks/detail.html', {
         'task': task
     })
 
 
 @login_required
-def delete(request, project_id, todolist_id, pk):
-    project = Project.objects.filter(created_by=request.user).get(pk=project_id)
-    todolist = Todolist.objects.filter(project=project).get(pk=todolist_id)
-    task = Task.objects.filter(project=project).filter(todolist=todolist).get(pk=pk)
+def edit(request, user_id,task_id):
+
+    if request.method == 'POST':
+        print("suiii")
+        print("request.POST.get('description', '')>>>>: ", request.POST.get('description', ''))
+        task = Task.objects.get(id=task_id)
+
+        task.title = request.POST.get('title', '')
+        task.description = request.POST.get('description', '')
+        task.due_date = request.POST.get('due_date', '')  
+        assigned_user_uuid = request.POST.get('assigned_user', '')
+        task.status = request.POST.get('status', '')
+        task.priority = request.POST.get('priority', '')
+        task.label = request.POST.get('label', '')
+        task.sprint = request.POST.get('sprint', '')
+    
+        
+        task.assigned_user = get_object_or_404(User, id=assigned_user_uuid)
+        task.created_by = get_object_or_404(User,id=user_id)
+
+        task.save()
+
+    task = Task.objects.get(id=task_id)
+    return render(request, 'tasks/edit.html', {
+        'task': task
+    })
+
+
+@login_required
+def delete(request, user_id, task_id):
+    task = Task.objects.get(id=task_id)
     task.delete()
 
-    return redirect(f'/projects/{project_id}/{todolist_id}/')
+    tasks = Task.objects.all()
+
+    for task in tasks:
+    
+        assigned_user_id = task.assigned_user_id
+        assigned_user = get_object_or_404(User, id=assigned_user_id)
+        task.assigned_user_name = assigned_user.name  
+
+    return redirect('tasks:alltasks',user_id=user_id)
